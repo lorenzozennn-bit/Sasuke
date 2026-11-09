@@ -1,39 +1,39 @@
-name: Build Sasuke Kenjutsu
-
+name: Build mod
+ 
 on:
   push:
   workflow_dispatch:
-
+ 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+ 
       - name: Localizar projeto
         id: loc
         run: |
           if [ -f SasukeKenjutsu-Source.zip ]; then
             rm -rf _kj && mkdir _kj && unzip -q -o SasukeKenjutsu-Source.zip -d _kj
           fi
-          DIR=$(dirname "$(find . -path ./.git -prune -o -name build.gradle -print | xargs grep -l 'net.neoforged.moddev' | head -1)")
+          DIR=$(dirname "$(find . -path ./.git -prune -o -name build.gradle -print | xargs grep -lE 'net.minecraftforge.gradle|net.neoforged.moddev' | head -1)")
           echo "Projeto em: $DIR"
           echo "dir=$DIR" >> "$GITHUB_OUTPUT"
-
+ 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
-
+          java-version: '17'
+ 
       - uses: gradle/actions/setup-gradle@v4
-
+ 
       - name: Build
         working-directory: ${{ steps.loc.outputs.dir }}
         run: |
           chmod +x gradlew
           ./gradlew build --stacktrace
-
+ 
       - uses: actions/upload-artifact@v4
         with:
-          name: SasukeKenjutsu-jar
+          name: mod-jar
           path: ${{ steps.loc.outputs.dir }}/build/libs/*.jar
